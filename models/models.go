@@ -17,7 +17,7 @@ type Todo struct {
 func (t *Todo) BeforeCreate(scope *gorm.Scope) error {
 	uuid := uuid.NewV4()
 
-	return scope.SetColumn("ID", uuid.String())
+	return scope.SetColumn("id", uuid.String())
 }
 
 // Insert for insert todo anjing
@@ -29,13 +29,24 @@ func (t *Todo) Insert(db *gorm.DB) error {
 // Get for get one
 func (t *Todo) Get(db *gorm.DB, ID string) ([]Todo, error) {
 	if ID != "" {
-		err := db.First(&t).Where("ID = $1", ID).Error
+		err := db.Where("id = $1", ID).First(t).Error
 		return nil, err
 	}
 
 	var dataTodo []Todo
 	err := db.Table("todos").Scan(&dataTodo).Error
 	return dataTodo, err
+}
+
+// Delete function
+func (t *Todo) Delete(db *gorm.DB, ID string) error {
+	_, err := t.Get(db, ID)
+	if err != nil {
+		return err
+	}
+
+	err = db.Where("id = $1", ID).Delete(t).Error
+	return err
 }
 
 func init() {

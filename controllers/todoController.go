@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -13,18 +12,17 @@ import (
 // TodoStruct struct
 type TodoStruct struct{}
 
-// func (t *TodoStruct) createTodo(c *gin.Context) {
-// 	completed, _ := strconv.Atoi(c.PostForm("completed"))
-// 	// todo := models.todoModel{Title: c.PostForm("title"), Completed: completed}
-// 	todo := models.TodoModel{Title: c.}
-// 	db.Save(&todo)
-// 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "Todo item created successfully!", "resourceId": todo.ID})
-// }
+var todoController TodoStruct
 
-// // Todo is controller function for todos
-// func Todo(c *gin.Context) {
-// 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Todo item created successfully!"})
-// }
+// Routes function for todos
+func (t *TodoStruct) Routes(route *gin.Engine) {
+	todoRoute := route.Group("api/todos")
+
+	todoRoute.GET("/", todoController.Get)
+	todoRoute.GET("/:id", todoController.One)
+	todoRoute.POST("/", todoController.Create)
+	todoRoute.DELETE("/:id", todoController.Delete)
+}
 
 // Create todo controller
 func (t *TodoStruct) Create(c *gin.Context) {
@@ -33,7 +31,7 @@ func (t *TodoStruct) Create(c *gin.Context) {
 	tx := db.Begin()
 	// tx := db
 	c.BindJSON(&todo)
-	fmt.Println(todo)
+
 	err := todo.Insert(tx)
 	if err != nil {
 		log.Println(err)
@@ -84,4 +82,25 @@ func (t *TodoStruct) Get(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dataTodo)
+}
+
+// Delete controller
+func (t *TodoStruct) Delete(c *gin.Context) {
+	var todo models.Todo
+	db := utils.DB()
+
+	ID := c.Param("id")
+	tx := db.Begin()
+
+	err := todo.Delete(tx, ID)
+	if err != nil {
+		log.Println(err)
+		tx.Rollback()
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	tx.Commit()
+
+	c.JSON(http.StatusAccepted, gin.H{"message": "Todo item deleted successfully!"})
 }

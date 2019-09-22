@@ -3,23 +3,23 @@ package main
 import (
 	"fmt"
 
-	"github.com/ranggakusuma/go-todo/controllers"
-
 	"github.com/gin-gonic/gin"
+	"github.com/ranggakusuma/go-todo/controllers"
 )
 
+// Router is global variable for gin engine
+var Router *gin.Engine
+
 func main() {
-	fmt.Println("test")
-	var todoController controllers.TodoStruct
-	router := gin.Default()
 
-	v1 := router.Group("api/todos")
-
-	v1.GET("/", todoController.Get)
-	v1.GET("/:id", todoController.One)
-	v1.POST("/", todoController.Create)
-
-	router.Run()
-
+	Routes()
+	Router.Run()
 	fmt.Println("Running server")
+}
+
+// Routes for run routes
+func Routes() {
+	Router = gin.Default()
+	var todoController controllers.TodoStruct
+	todoController.Routes(Router)
 }
