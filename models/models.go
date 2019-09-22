@@ -15,10 +15,8 @@ type Todo struct {
 
 // BeforeCreate function
 func (t *Todo) BeforeCreate(scope *gorm.Scope) error {
-	uuid, err := uuid.NewV4()
-	if err != nil {
-		return err
-	}
+	uuid := uuid.NewV4()
+
 	return scope.SetColumn("ID", uuid.String())
 }
 
